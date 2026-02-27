@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* LevelUp Official Startup Theme */
+    --background: 350 100% 98%; /* Ultra Light Pink */
+    --foreground: 45 92% 15%;  /* Deep Amber/Brown for contrast */
+    --card: 350 100% 99%;
+    --card-foreground: 45 92% 15%;
+    --primary: 200 100% 45%;    /* Bright, Friendly Light Blue */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 48 100% 50%;   /* Vivid Yellow for Highlights */
+    --secondary-foreground: 45 92% 10%;
+    --muted: 350 40% 92%;
+    --muted-foreground: 45 40% 40%;
+    --accent: 48 100% 50%;      /* Yellow Accent */
+    --accent-foreground: 45 92% 10%;
+    --success: 142 76% 20%;      /* Professional Dark Green */
+    --success-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 350 30% 90%;
+    --input: 350 30% 94%;
+    --ring: 200 100% 45%;
+    --radius: 1rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+}
+
+/* Level Map path animation */
+@keyframes path-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
