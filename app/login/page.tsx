@@ -34,7 +34,22 @@ export default function LoginPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        router.push("/dashboard");
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("onboarding_completed")
+            .eq("id", user.id)
+            .single();
+
+          if (profile && !profile.onboarding_completed) {
+            router.push("/onboarding");
+          } else {
+            router.push("/");
+          }
+        } else {
+          router.push("/");
+        }
         router.refresh();
       }
     } catch (err: unknown) {

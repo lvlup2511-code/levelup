@@ -10,6 +10,7 @@ import { useSpeechToText } from "@/hooks/useSpeechToText";
 import { calculateXpAward } from "@/lib/gamification";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
+import OutOfEnergyModal from "@/components/OutOfEnergyModal";
 
 type MessageRole = "user" | "assistant";
 
@@ -42,6 +43,7 @@ export default function QuestPage() {
   const [xpFeedback, setXpFeedback] = useState<number | null>(null); // 🟢 تغذية راجعة لـ XP
   const [leveledUp, setLeveledUp] = useState(false); // 🎊 ليفل أب
   const [newLevelNum, setNewLevelNum] = useState<number>(1); // 📈 المستوى الجديد
+  const [showOutOfEnergy, setShowOutOfEnergy] = useState(false); // 🔋 نفدت الطاقة
 
   const { transcript, isListening, startListening, stopListening, isSupported } = useSpeechToText("ar-SA");
 
@@ -123,12 +125,21 @@ export default function QuestPage() {
       const payload = {
         messages: allMessagesInOrder.map((m) => ({ role: m.role, content: m.content })),
         image: imageBase64 ?? undefined,
+        isVoice: isListening, // 🎤 Pass voice status
       };
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      // 🔋 Rate limit check
+      if (res.status === 429) {
+        setShowOutOfEnergy(true);
+        setLoading(false);
+        return;
+      }
+
       const data = await res.json();
       const reply = data.reply ?? data.error ?? "عذراً، لم أتمكن من المعالجة. حاول مرة أخرى.";
 
@@ -446,6 +457,12 @@ export default function QuestPage() {
           </div>
         </div>
       </div>
+
+      {/* 🔋 Out of Energy Modal */}
+      <OutOfEnergyModal
+        isOpen={showOutOfEnergy}
+        onClose={() => setShowOutOfEnergy(false)}
+      />
     </div>
   );
 }

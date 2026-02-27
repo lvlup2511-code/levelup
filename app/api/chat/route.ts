@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI, type Content, type Part } from "@google/generative-ai";
 import { createClient } from "@/lib/supabase/server";
 import { getLevelFromXp } from "@/lib/gamification";
+import { incrementMissionProgress } from "@/lib/missions";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -38,11 +39,15 @@ export type ChatMessage = { role: "user" | "assistant"; content: string };
 export type ChatRequestBody = {
   messages: ChatMessage[];
   image?: string;
+  isVoice?: boolean;
 };
 
 export type ChatResponseBody = {
   reply: string;
   error?: string;
+  rateLimited?: boolean;
+  remaining?: number;
+  limit?: number;
 };
 
 function parseImageDataUrl(dataUrl: string): { mimeType: string; data: string } | null {
@@ -88,6 +93,31 @@ export async function POST(request: NextRequest): Promise<NextResponse<ChatRespo
       studentLevel = getLevelFromXp(profile.xp_points).level;
       studentName = profile.username || user.email?.split("@")[0] || "Student";
     }
+
+    // ── Rate Limiting ───────────────────────────────────────
+    const { data: rateLimitData, error: rlError } = await supabase
+      .rpc("increment_api_usage", { p_user_id: user.id });
+
+    const rlRow = Array.isArray(rateLimitData) ? rateLimitData[0] : rateLimitData;
+    const MAX_DAILY = 50;
+
+    if (rlError) {
+      console.error("[Rate Limit RPC Error]:", rlError);
+      // Fail open — allow the request if the RPC errors
+    } else if (rlRow && !rlRow.is_allowed) {
+      console.log(`[Rate Limit] User ${user.id} hit daily limit (${rlRow.current_count}/${MAX_DAILY})`);
+      return NextResponse.json(
+        {
+          reply: "",
+          error: "لقد نفدت طاقتك اليوم! عد غداً لمواصلة رحلتك.",
+          rateLimited: true,
+          remaining: 0,
+          limit: MAX_DAILY,
+        },
+        { status: 429 }
+      );
+    }
+    // ────────────────────────────────────────────────────────
   }
 
   try {
@@ -117,7 +147,38 @@ export async function POST(request: NextRequest): Promise<NextResponse<ChatRespo
     const chat = model.startChat({ history: buildGeminiHistory(historyStartingWithUser(historyMessages)) });
     const result = await chat.sendMessage(sendParts);
 
-    return NextResponse.json({ reply: result.response.text() || "No reply generated." });
+    // ── Mission Tracking ────────────────────────────────────
+    if (user) {
+      // Track normal question
+      await incrementMissionProgress(supabase, user.id, "ask_questions");
+
+      // Track voice quest if flagged
+      if (body.isVoice) {
+        await incrementMissionProgress(supabase, user.id, "use_voice");
+      }
+
+      // Track image quest if image present
+      if (imageParsed) {
+        await incrementMissionProgress(supabase, user.id, "upload_image");
+      }
+    }
+    // ────────────────────────────────────────────────────────
+
+    const responseText = result.response.text() || "No reply generated.";
+    const response = NextResponse.json({ reply: responseText });
+    // Attach rate limit headers for the client
+    if (user) {
+      const { data: usageData } = await supabase
+        .from("api_usage")
+        .select("request_count")
+        .eq("user_id", user.id)
+        .eq("usage_date", new Date().toISOString().split("T")[0])
+        .single();
+      const used = usageData?.request_count ?? 0;
+      response.headers.set("X-RateLimit-Limit", "50");
+      response.headers.set("X-RateLimit-Remaining", String(Math.max(50 - used, 0)));
+    }
+    return response;
   } catch (err: any) {
     console.error("Gemini Error:", err);
     return NextResponse.json({ reply: "", error: err.message }, { status: 500 });

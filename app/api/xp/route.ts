@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getLevelFromXp, calculateDailyStreak } from "@/lib/gamification";
+import { incrementMissionProgress } from "@/lib/missions";
 
 export async function POST(request: NextRequest) {
     const supabase = await createClient();
@@ -65,6 +66,30 @@ export async function POST(request: NextRequest) {
         if (updateError) {
             throw updateError;
         }
+
+        // ── Mission Tracking ────────────────────────────────────
+        // 1. Track XP earned
+        await incrementMissionProgress(supabase, user.id, "earn_xp", xpAmount);
+
+        // 2. Track login streak if incremented
+        if (streakResult.streakUpdate === 'increment') {
+            await incrementMissionProgress(supabase, user.id, "login_streak", 1);
+        }
+
+        // 3. Track weekly XP for social leaderboard
+        const now = new Date();
+        const monday = new Date(now);
+        // Set to current week's Monday
+        const day = now.getDay();
+        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+        monday.setDate(diff);
+        const weekStart = monday.toISOString().split('T')[0];
+
+        await supabase.rpc("increment_weekly_xp", {
+            p_user_id: user.id,
+            p_xp_amount: xpAmount
+        });
+        // ────────────────────────────────────────────────────────
 
         return NextResponse.json({
             newXp,
