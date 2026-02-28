@@ -104,8 +104,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<ChatRespo
     if (rlError) {
       console.error("[Rate Limit RPC Error]:", rlError);
       // Fail open — allow the request if the RPC errors
-    } else if (rlRow && !rlRow.is_allowed) {
-      console.log(`[Rate Limit] User ${user.id} hit daily limit (${rlRow.current_count}/${MAX_DAILY})`);
+    } else if (rlRow && rlRow.allowed === false) {
+      console.log(`[Rate Limit] User ${user.id} hit daily limit (${rlRow.request_count}/${MAX_DAILY})`);
       return NextResponse.json(
         {
           reply: "",
