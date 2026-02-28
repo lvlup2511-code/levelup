@@ -82,3 +82,31 @@ export interface WeeklyXP {
   created_at: string;
   updated_at: string;
 }
+
+export type NotificationType =
+  | 'friend_request'
+  | 'friend_accepted'
+  | 'direct_message'
+  | 'mission_completed'
+  | 'level_up'
+  | 'system';
+
+export interface Notification {
+  id: number;
+  user_id: string;
+  type: NotificationType;
+  title: string;
+  content: string;
+  metadata: Record<string, unknown>;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface DirectMessage {
+  id: number;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  is_read: boolean;
+  created_at: string;
+}
