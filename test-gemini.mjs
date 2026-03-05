@@ -41,7 +41,7 @@ console.log("Key length:", apiKey.length);
 const require = createRequire(import.meta.url);
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const MODELS_TO_TRY = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-2.5-flash"];
+const MODELS_TO_TRY = ["gemini-3.1-flash-lite-preview"];
 
 async function testModel(modelName) {
   console.log("\n--- Testing model:", modelName, "---");

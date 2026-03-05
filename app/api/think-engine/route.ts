@@ -7,7 +7,7 @@ import type { ThinkingCategory } from "@/lib/supabase/types";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const GEMINI_MODEL = "gemini-2.5-flash";
+const GEMINI_MODEL = "gemini-3.1-flash-lite-preview";
 
 // ────────────────────────────────────────────────────────────
 // THINKING CATEGORIES & POINT WEIGHTS

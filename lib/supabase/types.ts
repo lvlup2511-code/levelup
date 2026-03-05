@@ -158,3 +158,12 @@ export interface DirectMessage {
   is_read: boolean;
   created_at: string;
 }
+
+export interface StudyMaterial {
+  id: string;
+  user_id: string;
+  title: string;
+  content: string;
+  created_at: string;
+}
+

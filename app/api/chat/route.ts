@@ -7,8 +7,8 @@ import { incrementMissionProgress } from "@/lib/missions";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-/** Use gemini-2.5-flash; gemini-1.5-flash returns 404 (model not found for v1beta). */
-const GEMINI_MODEL = "gemini-2.5-flash";
+// Gemini 3.1 series — high-volume workhorse for 2026 with fresh free-tier quota
+const GEMINI_MODEL = "gemini-3.1-flash-lite-preview";
 
 function getSystemInstruction(level: number, username: string) {
   let modeDescription = "";

@@ -30,6 +30,7 @@ const translations = {
         social: "Social",
         chat: "Chat",
         profile: "Profile",
+        study: "Study",
     },
     ar: {
         settings: "الإعدادات",
@@ -50,6 +51,7 @@ const translations = {
         social: "التواصل",
         chat: "الدردشة",
         profile: "الملف الشخصي",
+        study: "المذاكرة",
     },
     es: {
         settings: "AJUSTES",
@@ -70,6 +72,7 @@ const translations = {
         social: "Social",
         chat: "Chat",
         profile: "Perfil",
+        study: "Estudiar",
     },
 };
 
