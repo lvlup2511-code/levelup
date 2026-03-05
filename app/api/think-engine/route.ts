@@ -3,6 +3,7 @@ import { GoogleGenerativeAI, type Content, type Part } from "@google/generative-
 import { createClient } from "@/lib/supabase/server";
 import { getCognitiveLevelFromXp, getCognitiveLevelName } from "@/lib/gamification";
 import type { ThinkingCategory } from "@/lib/supabase/types";
+import { askNotebookLM } from "@/lib/notebooklm";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -153,6 +154,7 @@ export type ThinkEngineMessage = { role: "user" | "assistant"; content: string }
 export type ThinkEngineRequestBody = {
     messages: ThinkEngineMessage[];
     image?: string;
+    notebookId?: string;
 };
 
 export type ThinkEngineResponseBody = {
@@ -281,6 +283,31 @@ export async function POST(request: NextRequest): Promise<NextResponse<ThinkEngi
                 cognitiveLeveUp: false,
             });
         }
+
+        // ── NotebookLM-First Strategy ──────────────────────────
+        if (body.notebookId && lastEntry?.role === "user") {
+            try {
+                console.log(`[Think Engine] Trying NotebookLM (notebook: ${body.notebookId})...`);
+                const nlmAnswer = askNotebookLM(body.notebookId, lastEntry.content);
+                if (nlmAnswer) {
+                    console.log(`[Think Engine] ✅ NotebookLM response received.`);
+                    return NextResponse.json({
+                        reply: nlmAnswer.answer,
+                        thinkingCategory: null,
+                        cognitivePoints: null,
+                        feedback: null,
+                        totalXpAwarded: 0,
+                        newCognitiveXp: cognitiveXp,
+                        newCognitiveLevel: cognitiveLevel,
+                        cognitiveLeveUp: false,
+                        source: "notebooklm",
+                    });
+                }
+            } catch (nlmErr: any) {
+                console.warn(`[Think Engine] NotebookLM failed, falling back to Gemini:`, nlmErr.message);
+            }
+        }
+        // ── End NotebookLM ─────────────────────────────────────
 
         // ── Call Gemini ─────────────────────────────────────────
         const genAI = new GoogleGenerativeAI(apiKey);

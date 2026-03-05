@@ -164,6 +164,7 @@ export interface StudyMaterial {
   user_id: string;
   title: string;
   content: string;
+  notebook_id?: string | null;
   created_at: string;
 }
 

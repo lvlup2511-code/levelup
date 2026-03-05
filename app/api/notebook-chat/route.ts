@@ -3,6 +3,7 @@ import { GoogleGenerativeAI, type Content, type Part } from "@google/generative-
 import { createClient } from "@/lib/supabase/server";
 import { getCognitiveLevelFromXp, getCognitiveLevelName } from "@/lib/gamification";
 import type { ThinkingCategory } from "@/lib/supabase/types";
+import { askNotebookLM } from "@/lib/notebooklm";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -20,11 +21,12 @@ function getNotebookSystemPrompt(
     cognitiveLevel: number,
     levelName: string
 ): string {
-    return `You are the LevelUp "Smart Study Room" AI Tutor. You are an expert on the following document:
+    return `You are the LevelUp Private Tutor — an expert AI study companion built exclusively for the LevelUp learning platform. You are an expert on the following material from the student's Study Library:
 
 ═══════════════════════════════════════════
-DOCUMENT TITLE: ${docTitle}
-DOCUMENT CONTENT:
+STUDY MATERIAL: ${docTitle}
+FROM: Your Study Library / The El Moasser Curriculum
+CONTENT:
 ${docContent}
 ═══════════════════════════════════════════
 
@@ -32,10 +34,16 @@ STUDENT CONTEXT:
 Name: ${username}
 Cognitive Level: ${cognitiveLevel}/12 — "${levelName}"
 
-CORE RULES:
-1. **STRICT GROUNDING**: Answer the student's questions ONLY based on the content of the provided document. If a concept or answer is not in the text, politely tell ${username} that the information isn't in this specific material and guide them back to topics that ARE covered.
-2. **SOCRATIC METHOD**: Do not just give answers. Guide the student to find the answer themselves by asking probing questions or pointing to specific sections of the text.
-3. **EVALUATION**: Like the LevelUp Think Engine, you must evaluate their learning process.
+IDENTITY RULES (CRITICAL — NEVER VIOLATE):
+- You are ALWAYS "the LevelUp Private Tutor" or "your LevelUp AI".
+- NEVER mention Google, NotebookLM, Gemini, or any third-party AI service.
+- Refer to study materials as "Your Study Library" or "The El Moasser Curriculum".
+- When introducing yourself, say: "I'm your LevelUp Private Tutor, ready to help you master this material."
+
+TEACHING RULES:
+1. **STRICT GROUNDING**: Answer the student's questions ONLY based on the content of the provided material. If a concept is not in the text, politely tell ${username} that the information isn't in this section of their Study Library and guide them to topics that ARE covered.
+2. **SOCRATIC METHOD**: Do not just give answers. Guide the student to discover the answer by asking probing questions or pointing to specific sections of the material.
+3. **EVALUATION**: Evaluate their learning process and critical thinking.
 
 You MUST end every response with a JSON block wrapped in <think_eval> tags.
 
@@ -52,7 +60,7 @@ Example:
 }
 </think_eval>
 
-Note: For the FIRST interaction where they just select a document, welcome them and ask if they have any questions about ${docTitle}.`;
+Note: For the FIRST interaction where they just select a document, welcome them warmly as their LevelUp Private Tutor and ask if they have any questions about ${docTitle}.`;
 }
 
 // ────────────────────────────────────────────────────────────
@@ -101,7 +109,7 @@ export async function POST(request: NextRequest) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     try {
-        const { material_id, messages } = await request.json();
+        const { material_id, messages, notebookId } = await request.json();
         if (!material_id) return NextResponse.json({ error: "No material selected" }, { status: 400 });
 
         // 1. Fetch Material Content
@@ -115,6 +123,29 @@ export async function POST(request: NextRequest) {
         if (matError || !material) {
             return NextResponse.json({ error: "Material not found or access denied" }, { status: 404 });
         }
+
+        // ── NotebookLM-First Strategy ──────────────────────────
+        // If a notebookId is provided, try NotebookLM first.
+        // Falls through to Gemini on any failure.
+        const nlmLastMessage = messages[messages.length - 1]?.content;
+        if (notebookId && nlmLastMessage) {
+            try {
+                console.log(`[Notebook Chat] Trying NotebookLM (notebook: ${notebookId})...`);
+                const nlmAnswer = askNotebookLM(notebookId, nlmLastMessage);
+                if (nlmAnswer) {
+                    console.log(`[Notebook Chat] ✅ NotebookLM response received.`);
+                    return NextResponse.json({
+                        reply: nlmAnswer.answer,
+                        evaluation: null,
+                        totalXpAwarded: 0,
+                        source: "notebooklm",
+                    });
+                }
+            } catch (nlmErr: any) {
+                console.warn(`[Notebook Chat] NotebookLM failed, falling back to Gemini:`, nlmErr.message);
+            }
+        }
+        // ── End NotebookLM ─────────────────────────────────────
 
         // 2. Fetch User Profile for Level-aware Tutoring
         const { data: profile } = await supabase
