@@ -19,9 +19,13 @@ import {
     Save,
     Check,
     ArrowLeft,
+    Sun,
+    Moon,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
+import { useLanguage } from "@/lib/contexts/LanguageContext";
 import type { Profile, EducationStage } from "@/lib/supabase/types";
 
 // 12 fun DiceBear avatar seeds for cycling
@@ -38,6 +42,9 @@ function getAvatarUrl(seed: string) {
 export default function SettingsPage() {
     const router = useRouter();
     const supabase = createClient();
+    const { theme, setTheme } = useTheme();
+    const { language, setLanguage, t } = useLanguage();
+    const [mounted, setMounted] = useState(false);
 
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
@@ -84,6 +91,7 @@ export default function SettingsPage() {
             setLoading(false);
         }
         fetchProfile();
+        setMounted(true);
     }, [router, supabase]);
 
     const currentAvatarUrl = customAvatarUrl || getAvatarUrl(AVATAR_SEEDS[avatarSeedIndex]);
@@ -134,15 +142,15 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="flex flex-col gap-6 p-6 pt-8 pb-28 max-w-lg mx-auto">
+        <div className="flex flex-col gap-6 p-6 pt-8 pb-28 max-w-7xl mx-auto w-full">
             {/* Header */}
             <header className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-black tracking-tighter text-primary uppercase">
-                        SETTINGS
+                        {t("settings")}
                     </h1>
                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest italic opacity-70">
-                        Customize your profile.
+                        {t("customize_profile")}
                     </p>
                 </div>
                 <div className="bg-primary/20 p-3 rounded-2xl">
@@ -161,7 +169,7 @@ export default function SettingsPage() {
                         <div className="flex items-center gap-2 mb-4">
                             <Palette className="h-5 w-5 text-primary" />
                             <span className="font-black text-sm uppercase tracking-wider text-foreground">
-                                Avatar
+                                {t("avatar")}
                             </span>
                         </div>
                         <div className="flex items-center justify-center gap-6">
@@ -204,6 +212,102 @@ export default function SettingsPage() {
                 </Card>
             </motion.div>
 
+            {/* Appearance Section */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+            >
+                <Card className="border-2 border-primary/20">
+                    <CardContent className="pt-6 pb-6">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Palette className="h-5 w-5 text-primary" />
+                                <span className="font-black text-sm uppercase tracking-wider text-foreground">
+                                    {t("appearance")}
+                                </span>
+                            </div>
+                            {mounted && (
+                                <div className="flex items-center gap-1 bg-secondary p-1 rounded-xl border-2 border-primary/10">
+                                    <Button
+                                        variant={theme === "light" ? "default" : "ghost"}
+                                        size="sm"
+                                        onClick={() => setTheme("light")}
+                                        className="rounded-lg h-9 gap-2 px-3 font-bold"
+                                    >
+                                        <Sun className="h-4 w-4" />
+                                        {t("light")}
+                                    </Button>
+                                    <Button
+                                        variant={theme === "dark" ? "default" : "ghost"}
+                                        size="sm"
+                                        onClick={() => setTheme("dark")}
+                                        className="rounded-lg h-9 gap-2 px-3 font-bold"
+                                    >
+                                        <Moon className="h-4 w-4" />
+                                        {t("dark")}
+                                    </Button>
+                                    <Button
+                                        variant={theme === "system" ? "default" : "ghost"}
+                                        size="sm"
+                                        onClick={() => setTheme("system")}
+                                        className="rounded-lg h-9 px-3 font-bold"
+                                    >
+                                        {t("auto")}
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            </motion.div>
+
+            {/* Language Section */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.18 }}
+            >
+                <Card className="border-2 border-primary/20">
+                    <CardContent className="pt-6 pb-6">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Settings className="h-5 w-5 text-primary" />
+                                <span className="font-black text-sm uppercase tracking-wider text-foreground">
+                                    {t("language")}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-1 bg-secondary p-1 rounded-xl border-2 border-primary/10">
+                                <Button
+                                    variant={language === "en" ? "default" : "ghost"}
+                                    size="sm"
+                                    onClick={() => setLanguage("en")}
+                                    className="rounded-lg h-9 px-3 font-bold"
+                                >
+                                    EN
+                                </Button>
+                                <Button
+                                    variant={language === "ar" ? "default" : "ghost"}
+                                    size="sm"
+                                    onClick={() => setLanguage("ar")}
+                                    className="rounded-lg h-9 px-4 font-bold"
+                                >
+                                    العربية
+                                </Button>
+                                <Button
+                                    variant={language === "es" ? "default" : "ghost"}
+                                    size="sm"
+                                    onClick={() => setLanguage("es")}
+                                    className="rounded-lg h-9 px-3 font-bold"
+                                >
+                                    ES
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </motion.div>
+
             {/* Username Section */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -215,7 +319,7 @@ export default function SettingsPage() {
                         <div className="flex items-center gap-2">
                             <User className="h-5 w-5 text-primary" />
                             <span className="font-black text-sm uppercase tracking-wider text-foreground">
-                                Username
+                                {t("username")}
                             </span>
                         </div>
                         <Input
@@ -246,7 +350,7 @@ export default function SettingsPage() {
                         <div className="flex items-center gap-2">
                             <GraduationCap className="h-5 w-5 text-primary" />
                             <span className="font-black text-sm uppercase tracking-wider text-foreground">
-                                Education Stage
+                                {t("education_stage")}
                             </span>
                         </div>
 
@@ -344,17 +448,17 @@ export default function SettingsPage() {
                     {saving ? (
                         <>
                             <Loader2 className="h-5 w-5 animate-spin" />
-                            SAVING...
+                            {t("saving")}
                         </>
                     ) : saved ? (
                         <>
                             <Check className="h-5 w-5" />
-                            SAVED!
+                            {t("saved")}
                         </>
                     ) : (
                         <>
                             <Save className="h-5 w-5" />
-                            SAVE CHANGES
+                            {t("save_changes")}
                         </>
                     )}
                 </Button>

@@ -14,6 +14,7 @@ import {
     Sparkles,
     Check,
     CheckCheck,
+    Volume2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -237,6 +238,29 @@ export default function ConversationPage() {
         }
     };
 
+    // 6. Voice Assistant (TTS)
+    const speakText = (text: string) => {
+        if (!window.speechSynthesis) return;
+
+        // Clean up text (remove emoji prefix if present)
+        const cleanText = text.replace(/^🤖 Gemini:\s*/i, "");
+
+        // Cancel any existing speech
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        // Try to find a nice English voice or just use default
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = voices.find(v => v.lang.startsWith("en") && v.name.includes("Google")) ||
+            voices.find(v => v.lang.startsWith("en"));
+
+        if (preferredVoice) utterance.voice = preferredVoice;
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+
+        window.speechSynthesis.speak(utterance);
+    };
+
     // Group messages by date
     const groupedMessages: { date: string; messages: DirectMessage[] }[] = [];
     let currentDate = "";
@@ -259,7 +283,7 @@ export default function ConversationPage() {
     }
 
     return (
-        <div className="flex flex-col h-screen max-w-lg mx-auto">
+        <div className="flex flex-col h-screen max-w-7xl mx-auto w-full">
             {/* Chat Header */}
             <header className="sticky top-0 z-40 flex items-center gap-3 border-b-2 border-border bg-card/95 backdrop-blur px-4 py-3">
                 <Button
@@ -358,21 +382,35 @@ export default function ConversationPage() {
                                             )}
                                         >
                                             <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                                            <div className="flex items-center justify-end gap-1 mt-1">
-                                                <p className={cn(
-                                                    "text-[9px] font-bold uppercase tracking-wider",
-                                                    isMine ? "text-primary-foreground/60" : "text-muted-foreground/50"
-                                                )}>
-                                                    {formatTime(msg.created_at)}
-                                                </p>
-                                                {isMine && (
-                                                    <div className="flex ml-1">
-                                                        {msg.is_read ? (
-                                                            <CheckCheck className="h-3 w-3 text-sky-300" />
-                                                        ) : (
-                                                            <Check className="h-3 w-3 text-primary-foreground/40" />
+                                            <div className="flex items-center justify-between gap-2 mt-1">
+                                                <div className="flex items-center gap-1">
+                                                    <p className={cn(
+                                                        "text-[9px] font-bold uppercase tracking-wider",
+                                                        isMine ? "text-primary-foreground/60" : "text-muted-foreground/50"
+                                                    )}>
+                                                        {formatTime(msg.created_at)}
+                                                    </p>
+                                                    {isMine && (
+                                                        <div className="flex ml-1">
+                                                            {msg.is_read ? (
+                                                                <CheckCheck className="h-3 w-3 text-sky-300" />
+                                                            ) : (
+                                                                <Check className="h-3 w-3 text-primary-foreground/40" />
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {msg.content.startsWith("🤖 Gemini:") && (
+                                                    <button
+                                                        onClick={() => speakText(msg.content)}
+                                                        className={cn(
+                                                            "p-1 rounded-md transition-colors",
+                                                            isMine ? "hover:bg-primary-foreground/20 text-primary-foreground/80" : "hover:bg-primary/10 text-primary"
                                                         )}
-                                                    </div>
+                                                        title="Read Aloud"
+                                                    >
+                                                        <Volume2 className="h-3.5 w-3.5" />
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>

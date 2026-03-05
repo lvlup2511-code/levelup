@@ -222,7 +222,7 @@ export default function QuestPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] flex-col bg-background md:max-w-lg md:mx-auto relative overflow-hidden">
+    <div className="flex h-[calc(100vh-5rem)] flex-col bg-background max-w-7xl mx-auto w-full relative overflow-hidden">
       {/* 🟢 XP Toast */}
       <AnimatePresence>
         {xpFeedback && (

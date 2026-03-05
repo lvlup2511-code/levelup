@@ -25,7 +25,7 @@ export default async function HomePage() {
   const coins = (profile?.coins ?? 0).toLocaleString();
 
   return (
-    <div className="flex flex-col gap-6 p-6 pt-8 max-w-lg mx-auto pb-24">
+    <div className="flex flex-col gap-6 p-6 pt-8 max-w-7xl mx-auto pb-24 w-full">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-black tracking-tight text-primary">
           LevelUp

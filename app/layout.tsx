@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { BottomNav } from "@/components/BottomNav";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { LanguageProvider } from "@/lib/contexts/LanguageContext";
 
 export const metadata: Metadata = {
   title: "LevelUp — Gamified Learning",
@@ -13,12 +15,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background text-foreground">
-        <main className="min-h-screen pb-20 md:pb-24 md:max-w-lg md:mx-auto md:border-x md:border-border">
-          {children}
-        </main>
-        <BottomNav />
+        <LanguageProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <main className="min-h-screen pb-20 md:pb-24 w-full">
+              {children}
+            </main>
+            <BottomNav />
+          </ThemeProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

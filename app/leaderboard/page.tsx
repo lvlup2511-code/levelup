@@ -139,7 +139,7 @@ export default function LeaderboardPage() {
   );
 
   return (
-    <div className="flex flex-col gap-6 p-6 pt-8 pb-24 h-screen overflow-hidden max-w-lg mx-auto">
+    <div className="flex flex-col gap-6 p-6 pt-8 pb-24 h-screen overflow-hidden max-w-7xl mx-auto w-full">
       <header className="mb-2">
         <h1 className="text-3xl font-black tracking-tight text-primary uppercase leading-none mb-1">
           LEADERBOARD

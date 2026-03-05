@@ -4,20 +4,26 @@
 
 @layer base {
   :root {
-    /* LevelUp Official Startup Theme */
-    --background: 350 100% 98%; /* Ultra Light Pink */
-    --foreground: 45 92% 15%;  /* Deep Amber/Brown for contrast */
+    /* LevelUp Official Startup Theme - Light Mode */
+    --background: 350 100% 98%;
+    /* Ultra Light Pink */
+    --foreground: 45 92% 15%;
+    /* Deep Amber/Brown for contrast */
     --card: 350 100% 99%;
     --card-foreground: 45 92% 15%;
-    --primary: 200 100% 45%;    /* Bright, Friendly Light Blue */
+    --primary: 200 100% 45%;
+    /* Bright, Friendly Light Blue */
     --primary-foreground: 0 0% 100%;
-    --secondary: 48 100% 50%;   /* Vivid Yellow for Highlights */
+    --secondary: 48 100% 50%;
+    /* Vivid Yellow for Highlights */
     --secondary-foreground: 45 92% 10%;
     --muted: 350 40% 92%;
     --muted-foreground: 45 40% 40%;
-    --accent: 48 100% 50%;      /* Yellow Accent */
+    --accent: 48 100% 50%;
+    /* Yellow Accent */
     --accent-foreground: 45 92% 10%;
-    --success: 142 76% 20%;      /* Professional Dark Green */
+    --success: 142 76% 20%;
+    /* Professional Dark Green */
     --success-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -25,6 +31,35 @@
     --input: 350 30% 94%;
     --ring: 200 100% 45%;
     --radius: 1rem;
+  }
+
+  .dark {
+    /* LevelUp Official Startup Theme - Dark Mode */
+    --background: 240 10% 4%;
+    /* Deep Near-Black */
+    --foreground: 0 0% 98%;
+    /* Soft White */
+    --card: 240 10% 6%;
+    /* Slightly lighter for cards */
+    --card-foreground: 0 0% 98%;
+    --primary: 217 91% 60%;
+    /* Vibrant Blue (adjusted for dark) */
+    --primary-foreground: 222 47% 11%;
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 5% 15%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 48 100% 50%;
+    /* Keep the energetic yellow */
+    --accent-foreground: 45 92% 10%;
+    --success: 142 76% 36%;
+    /* Brighter Green for dark mode */
+    --success-foreground: 0 0% 100%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5% 15%;
+    --input: 240 5% 15%;
+    --ring: 217 91% 60%;
   }
 
   * {
@@ -40,6 +75,7 @@
   .text-balance {
     text-wrap: balance;
   }
+
   .safe-area-pb {
     padding-bottom: env(safe-area-inset-bottom, 0);
   }
@@ -47,6 +83,13 @@
 
 /* Level Map path animation */
 @keyframes path-pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }

@@ -111,7 +111,7 @@ export default function ChatInboxPage() {
     );
 
     return (
-        <div className="flex flex-col gap-4 p-6 pt-8 pb-28 max-w-lg mx-auto min-h-screen">
+        <div className="flex flex-col gap-4 p-6 pt-8 pb-28 max-w-7xl mx-auto min-h-screen w-full">
             {/* Header */}
             <header className="flex items-center justify-between">
                 <div>

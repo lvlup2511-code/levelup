@@ -79,9 +79,9 @@ function LevelNode({
         isLeft ? "left-0" : "right-0",
         unlocked
           ? cn(
-              "cursor-pointer hover:scale-110 hover:shadow-lg active:scale-105",
-              typeStyles[level.type]
-            )
+            "cursor-pointer hover:scale-110 hover:shadow-lg active:scale-105",
+            typeStyles[level.type]
+          )
           : cn("cursor-not-allowed", lockedStyles)
       )}
       style={{ width: NODE_SIZE, height: NODE_SIZE }}
@@ -215,7 +215,7 @@ export default function LevelsPage() {
         </p>
       </header>
 
-      <div className="relative mx-auto w-full max-w-lg">
+      <div className="relative mx-auto w-full max-w-7xl px-4">
         {/* Winding path SVG behind nodes */}
         <div
           className="absolute left-1/2 top-0 -translate-x-1/2"
